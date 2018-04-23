@@ -5,6 +5,7 @@ namespace NicolasMahe\SlackOutput\Command;
 use Illuminate\Console\Command;
 use Maknz\Slack\Client;
 use Exception;
+use GuzzleHttp\Client as Guzzle;
 
 class SlackPost extends Command
 {
@@ -25,6 +26,12 @@ class SlackPost extends Command
      * @var string
      */
     protected $description = 'Send a message to Slack';
+
+    /**
+     * The Guzzle HTTP client
+     * @var Guzzle
+     */
+    protected $guzzle;
 
     /**
      * The slack client
@@ -80,11 +87,16 @@ class SlackPost extends Command
             throw new Exception("The endpoint url is not set in the config");
         }
 
+        if (empty($slack_config['guzzle_options']))
+            $this->guzzle = new Guzzle();
+        else
+            $this->guzzle = new Guzzle($slack_config['guzzle_options']);
+
         //init client
         $this->client = new Client($slack_config["endpoint"], [
             "username" => $slack_config["username"],
             "icon"     => $slack_config["icon"]
-        ]);
+        ], $this->guzzle);
     }
 
 
